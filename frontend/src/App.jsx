@@ -1,6 +1,36 @@
 import React, { useState, useEffect } from 'react';
 
 // ==========================================
+// FONCTION UTILE : Images selon la spécialité (précise)
+// ==========================================
+const getSpecialitePhoto = (specialiteName) => {
+  switch(specialiteName) {
+    case 'Boucher': return "https://images.pexels.com/photos/8657082/pexels-photo-8657082.jpeg"; 
+    case 'Boulanger': return "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80"; 
+    case 'Chocolatier': return "https://images.unsplash.com/photo-1548907040-4baa42d10919?auto=format&fit=crop&w=800&q=80"; 
+    case 'Traiteur': return "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=800&q=80"; 
+    case 'Chauffagiste': return "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=800&q=80"; 
+    case 'Charpentier': return "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80"; 
+    case 'Électricien': return "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800&q=80"; 
+    case 'Maçon': return "https://images.pexels.com/photos/2219024/pexels-photo-2219024.jpeg"; 
+    case 'Menuisier': return "https://images.unsplash.com/photo-1505798577917-a65157d3320a?auto=format&fit=crop&w=800&q=80"; 
+    case 'Peintre': return "https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=800&q=80"; 
+    case 'Plombier': return "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80"; 
+    case 'Bijoutier': return "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=800&q=80"; 
+    case 'Couturier': return "https://images.pexels.com/photos/1266139/pexels-photo-1266139.jpeg"; 
+    case 'Ébéniste': return "https://images.pexels.com/photos/172289/pexels-photo-172289.jpeg"; 
+    case 'Verrier': return "https://images.pexels.com/photos/26832096/pexels-photo-26832096.jpeg"; 
+    case 'Carrossier': return "https://images.pexels.com/photos/4489718/pexels-photo-4489718.jpeg"; 
+    case 'Coiffeur': return "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80"; // ciseaux et salon
+    case 'Fleuriste': return "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?auto=format&fit=crop&w=800&q=80"; 
+    case 'Serrurier': return "https://images.pexels.com/photos/792034/pexels-photo-792034.jpeg"; 
+    case 'Toiletteur': return "https://images.pexels.com/photos/4588019/pexels-photo-4588019.jpeg"; 
+    case 'Webdesign': return "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80"; 
+    default: return "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=800&q=80"; // Image par défaut générique
+  }
+};
+
+// ==========================================
 // COMPOSANT HEADER
 // ==========================================
 const Header = ({ navigate, handleSearch, handleCategory, searchQuery }) => (
@@ -71,13 +101,28 @@ const StarRating = ({ note }) => {
 };
 
 // ==========================================
+// PAGE : ERREUR 404
+// ==========================================
+const NotFound = ({ navigate }) => (
+  <main className="flex-grow-1 d-flex align-items-center justify-content-center py-5">
+    <div className="container text-center">
+      <img src="https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=600&q=80" className="img-fluid rounded-circle mb-5 shadow" alt="Erreur 404" style={{ maxWidth: '300px', height: '300px', objectFit: 'cover' }} />
+      <h1 className="display-3 fw-bold mb-3" style={{ color: '#00497c' }}>Oups ! Erreur 404</h1>
+      <p className="fs-4 text-muted mb-5">La page que vous avez demandée semble introuvable ou a été déplacée.</p>
+      <button onClick={() => navigate('accueil')} className="btn text-white fw-bold py-3 px-5 rounded-pill fs-5 shadow-sm border-0" style={{ backgroundColor: '#0074c7' }}>
+        <i className="bi bi-house-door-fill me-3"></i>Retourner à l'accueil
+      </button>
+    </div>
+  </main>
+);
+
+// ==========================================
 // PAGE : ACCUEIL
 // ==========================================
 const Accueil = ({ navigate }) => {
   const [topArtisans, setTopArtisans] = useState([]);
   const [error, setError] = useState(false);
 
-  // Récupération des données depuis TON API Node.js locale
   useEffect(() => {
     fetch('http://localhost:3000/api/artisans/top')
       .then(res => res.json())
@@ -153,23 +198,17 @@ const Liste = ({ navigate, categoryFilter, searchQuery }) => {
       .catch(err => console.error("Erreur API:", err));
   }, []);
 
-  // Filtrage des artisans dynamique (Barre de recherche + Catégories)
   const filteredArtisans = artisans.filter(artisan => {
-    // 1. Filtre par catégorie
     const matchCategory = categoryFilter ? artisan.Specialite?.Categorie?.nom === categoryFilter : true;
-    
-    // 2. Filtre par recherche texte (nom, spécialité, ville)
     const searchLower = searchQuery.toLowerCase();
     const matchSearch = searchQuery ? (
       artisan.nom.toLowerCase().includes(searchLower) ||
       artisan.localisation.toLowerCase().includes(searchLower) ||
       (artisan.Specialite?.nom || '').toLowerCase().includes(searchLower)
     ) : true;
-
     return matchCategory && matchSearch;
   });
 
-  // Détermination du titre de la page
   let titrePage = "Tous nos artisans";
   if (categoryFilter) titrePage = `Artisans de la catégorie "${categoryFilter}"`;
   if (searchQuery) titrePage = `Recherche : "${searchQuery}"`;
@@ -217,24 +256,42 @@ const Liste = ({ navigate, categoryFilter, searchQuery }) => {
 // ==========================================
 // PAGE : FICHE DÉTAIL D'UN ARTISAN
 // ==========================================
-const Fiche = ({ artisanId }) => {
+const Fiche = ({ artisanId, navigate }) => {
   const [artisan, setArtisan] = useState(null);
+  const [isNotFound, setIsNotFound] = useState(false); // État pour gérer la 404
 
   useEffect(() => {
     fetch(`http://localhost:3000/api/artisans/${artisanId}`)
-      .then(res => res.json())
-      .then(data => setArtisan(data))
-      .catch(err => console.error("Erreur API:", err));
+      .then(res => {
+        if (!res.ok) throw new Error("Artisan introuvable"); // Déclenche le catch si l'ID n'existe pas
+        return res.json();
+      })
+      .then(data => {
+        if (data.message) { // Gestion du message d'erreur JSON du backend
+          setIsNotFound(true);
+        } else {
+          setArtisan(data);
+        }
+      })
+      .catch(err => {
+        console.error("Erreur API:", err);
+        setIsNotFound(true); // Affiche la 404 en cas d'erreur
+      });
   }, [artisanId]);
 
+  if (isNotFound) return <NotFound navigate={navigate} />;
   if (!artisan) return <div className="container py-5 text-center"><h2>Chargement...</h2></div>;
+
+  // Récupération de l'image dynamique selon la spécialité (et non la catégorie)
+  const photoUrl = getSpecialitePhoto(artisan.Specialite?.nom);
 
   return (
     <main className="flex-grow-1 py-5">
       <div className="container">
         <div className="row gx-5">
           <div className="col-lg-5 mb-4 mb-lg-0">
-            <img src="https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=800&q=80" className="img-fluid rounded-4 shadow-sm mb-4 w-100" alt="Artisan au travail" style={{ objectFit: 'cover', height: '300px' }} />
+            {/* Utilisation de l'image dynamique ici */}
+            <img src={photoUrl} className="img-fluid rounded-4 shadow-sm mb-4 w-100" alt="Artisan au travail" style={{ objectFit: 'cover', height: '300px' }} />
             <h1 className="h2 fw-bold mb-2" style={{ color: '#00497c' }}>{artisan.nom}</h1>
             <StarRating note={artisan.note} />
             <div className="fw-semibold fs-5 mb-2" style={{ color: '#0074c7' }}><i className="bi bi-tools me-3"></i>{artisan.Specialite?.nom || 'Artisan'}</div>
@@ -280,12 +337,11 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState('accueil');
   const [currentArtisanId, setCurrentArtisanId] = useState(null);
   
-  // Nouveaux états pour gérer la recherche et les catégories
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
 
-  // Injection de Bootstrap
   useEffect(() => {
+    document.title = "Trouve ton artisan";
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css';
@@ -300,7 +356,6 @@ export default function App() {
   const navigate = (page, artisanId = null) => {
     setCurrentPage(page);
     setCurrentArtisanId(artisanId);
-    // On réinitialise la recherche si on retourne à l'accueil
     if (page === 'accueil') {
       setSearchQuery('');
       setCategoryFilter('');
@@ -308,16 +363,15 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  // Gestionnaires pour la recherche et les catégories
   const handleSearch = (query) => {
     setSearchQuery(query);
-    setCategoryFilter(''); // Efface la catégorie si on tape une recherche manuelle
+    setCategoryFilter(''); 
     if (currentPage !== 'liste') setCurrentPage('liste');
   };
 
   const handleCategory = (category) => {
     setCategoryFilter(category);
-    setSearchQuery(''); // Efface la recherche si on clique sur une catégorie
+    setSearchQuery(''); 
     if (currentPage !== 'liste') setCurrentPage('liste');
   };
 
@@ -330,10 +384,13 @@ export default function App() {
       PageContent = <Liste navigate={navigate} categoryFilter={categoryFilter} searchQuery={searchQuery} />;
       break;
     case 'fiche':
-      PageContent = <Fiche artisanId={currentArtisanId} />;
+      PageContent = <Fiche artisanId={currentArtisanId} navigate={navigate} />;
+      break;
+    case '404':
+      PageContent = <NotFound navigate={navigate} />;
       break;
     default:
-      PageContent = <Accueil navigate={navigate} />;
+      PageContent = <NotFound navigate={navigate} />; // Sécurité 404 sur page inconnue
   }
 
   return (
